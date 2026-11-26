@@ -47,3 +47,19 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/zeynosh/e-ticaret-api:latest
+
+  sunucuya-yukle:
+    needs: paketle-ve-yukle
+    runs-on: ubuntu-latest
+    steps:
+      - name: AWS EC2 Sunucusunu Guncelle
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            sudo docker pull ghcr.io/zeynosh/e-ticaret-api:latest
+            sudo docker rm -f e-ticaret-canli || true
+            sudo docker run -d -p 8000:8000 --name e-ticaret-canli --restart always ghcr.io/zeynosh/e-ticaret-api:latest
+            sudo docker image prune -f
